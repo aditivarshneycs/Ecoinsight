@@ -1,0 +1,57 @@
+.awareness-container {
+  padding: 3rem 1rem;
+  text-align: center;
+  background: #f5fff7;
+  min-height: 100vh;
+}
+
+.awareness-container h2 {
+  font-size: 2.2rem;
+  color: #2e8b57;
+  margin-bottom: 1rem;
+}
+
+.intro {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 2rem;
+}
+
+.awareness-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.awareness-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: 300px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: 0.3s;
+  text-align: left;
+}
+
+.awareness-card:hover {
+  transform: translateY(-5px);
+}
+
+.awareness-card img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.awareness-card h3 {
+  color: #2e8b57;
+}
+
+.tip {
+  background: #e7fbe7;
+  padding: 0.6rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
