@@ -1,57 +1,124 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { classifyWaste } from "../utils/classifier";
+import "./UploadPage.css";
 
-export default function Upload() {
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [status, setStatus] = useState("");
-  const navigate = useNavigate();
+function UploadPage() {
+  const [image, setImage] = useState(null);
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const current = JSON.parse(localStorage.getItem("eco_current") || "null");
+  const handleUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const handleFile = (e) => {
-    const f = e.target.files[0];
-    if (!f) return;
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
-    setStatus("Classifying...");
-    // Simulate classification result
+    setImage(URL.createObjectURL(file));
+    setLoading(true);
+    setResult(null);
+
+    // Simulate AI model processing
     setTimeout(() => {
-      const types = ["Recyclable", "Organic", "Hazardous"];
-      const type = types[Math.floor(Math.random() * types.length)];
-      const confidence = Math.floor(75 + Math.random() * 25);
-      setStatus(`Detected: ${type} (${confidence}%)`);
-      // Save to history
-      const history = JSON.parse(localStorage.getItem("eco_history") || "[]");
-      history.unshift({
-        id: Date.now(),
-        user: current?.username || "guest",
-        fileName: f.name,
-        thumb: preview,
-        category: type,
-        confidence,
-        date: new Date().toISOString()
-      });
-      localStorage.setItem("eco_history", JSON.stringify(history));
-    }, 1500);
+      const prediction = classifyWaste(file);
+      setResult(prediction);
+      setLoading(false);
+    }, 2000); // 2 sec delay
   };
 
-  if (!current) {
-    // not logged in, redirect
-    navigate("/login");
-    return null;
-  }
-
   return (
-    <div style={{ maxWidth: 900, margin: "12px auto" }}>
-      <div className="card">
-        <h2>Upload & Classify Waste</h2>
-        <input type="file" accept="image/*" onChange={handleFile} />
-        {preview && <div style={{ marginTop: 12 }}>
-          <img src={preview} alt="preview" style={{ maxWidth: 300, borderRadius: 8 }} />
-        </div>}
-        {status && <div style={{ marginTop: 8 }}>{status}</div>}
+    <div className="upload-page">
+      <h1>♻️ EcoInsight: Waste Classifier</h1>
+      <p>
+        Upload an image of waste to identify its type and learn how to dispose
+        of it properly. Our AI helps you understand whether it’s organic,
+        recyclable, or hazardous.
+      </p>
+
+      <div className="upload-box">
+        <input type="file" accept="image/*" onChange={handleUpload} />
+        {image && <img src={image} alt="Uploaded Waste" className="preview" />}
       </div>
+
+      {loading && (
+        <motion.div
+          className="loading-section"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <div className="loading-animation">🔄 Analyzing waste...</div>
+          <p>Please wait while the AI classifies your waste type.</p>
+        </motion.div>
+      )}
+
+      {!loading && result && (
+        <motion.div
+          className="result-section"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2>
+            Classification Result:{" "}
+            <span style={{ color: result.color }}>{result.type}</span>
+          </h2>
+
+          <div
+            className="bin-info"
+            style={{ backgroundColor: result.color, color: "#fff" }}
+          >
+            <p>
+              <strong>🗑 Waste Type:</strong> {result.type}
+            </p>
+            <p>
+              <strong>🚮 Dispose:</strong> Throw it in the{" "}
+              <b>{result.bin}</b>.
+            </p>
+            <p>
+              <strong>💡 Tips to Handle:</strong>
+            </p>
+            <ul>
+              {result.tips.map((tip, index) => (
+                <li key={index}>✅ {tip}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="education-section">
+            <h3>🌍 Why Waste Segregation Matters</h3>
+            <p>
+              Segregating waste helps reduce pollution, saves natural
+              resources, and makes recycling more effective. Here’s how you can
+              do it easily:
+            </p>
+            <ul>
+              <li>
+                🟢 <b>Organic Waste:</b> Food scraps, peels, leaves → Compost or
+                throw in <b>Green Bin</b>.
+              </li>
+              <li>
+                🔵 <b>Recyclable Waste:</b> Paper, plastic bottles, glass →
+                Clean and put in <b>Blue Bin</b>.
+              </li>
+              <li>
+                🔴 <b>Hazardous Waste:</b> Batteries, medical waste → Dispose
+                safely in <b>Red Bin</b>.
+              </li>
+            </ul>
+          </div>
+
+          <motion.button
+            className="try-again-btn"
+            whileHover={{ scale: 1.05 }}
+            onClick={() => {
+              setImage(null);
+              setResult(null);
+            }}
+          >
+            🔁 Try Another Image
+          </motion.button>
+        </motion.div>
+      )}
     </div>
   );
 }
+
+export default UploadPage;

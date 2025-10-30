@@ -1,0 +1,71 @@
+.upload-page {
+  text-align: center;
+  background: #f0f7f4;
+  min-height: 100vh;
+  padding: 40px;
+  font-family: "Poppins", sans-serif;
+}
+
+h1 {
+  font-size: 2.2rem;
+  color: #2e8b57;
+}
+
+.upload-box {
+  margin-top: 30px;
+  padding: 20px;
+  border: 2px dashed #2e8b57;
+  border-radius: 10px;
+  background: #fff;
+  width: 60%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.upload-box input {
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.preview {
+  margin-top: 20px;
+  width: 200px;
+  height: 200px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.result-section {
+  margin-top: 30px;
+}
+
+.result-section span {
+  color: #1b6ca8;
+  font-weight: 700;
+}
+
+.bin-info {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 10px;
+  color: #fff;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.bin-info.green {
+  background: #4caf50;
+}
+
+.bin-info.blue {
+  background: #2196f3;
+}
+
+.bin-info.red {
+  background: #f44336;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
