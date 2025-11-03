@@ -18,6 +18,7 @@ connectDB();
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/waste", wasteRoutes);
+app.use("/uploads", express.static("uploads"));
 
 // Default route
 app.get("/", (req, res) => {

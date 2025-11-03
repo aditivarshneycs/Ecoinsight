@@ -1,10 +1,20 @@
 import express from "express";
-import { uploadWaste, getWasteHistory } from "../controllers/wasteController.js";
-import protect from "../middleware/authMiddleware.js";
+import multer from "multer";
+import { uploadWaste, getUserHistory } from "../controllers/wasteController.js";
 
 const router = express.Router();
 
-router.post("/upload", protect, uploadWaste);
-router.get("/history/:userId", protect, getWasteHistory);
+// Storage config
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename: (req, file, cb) =>
+    cb(null, Date.now() + "-" + file.originalname),
+});
+
+const upload = multer({ storage });
+
+// Routes
+router.post("/upload", upload.single("image"), uploadWaste);
+router.get("/history/:userId", getUserHistory);
 
 export default router;

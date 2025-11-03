@@ -2,25 +2,35 @@ import Waste from "../models/Waste.js";
 
 export const uploadWaste = async (req, res) => {
   try {
-    const { wasteType, description } = req.body;
-    const waste = await Waste.create({
-      user: req.user,
+    const { userId, wasteType, description } = req.body;
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+    if (!imageUrl) {
+      return res.status(400).json({ message: "Image is required." });
+    }
+
+    const waste = new Waste({
+      userId,
       wasteType,
       description,
+      imageUrl,
     });
-    res.status(201).json({ message: "Waste data saved successfully", waste });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    await waste.save();
+    res.status(201).json({ message: "Waste uploaded successfully!", waste });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
   }
 };
 
-export const getWasteHistory = async (req, res) => {
+export const getUserHistory = async (req, res) => {
   try {
-    const wasteData = await Waste.find({ user: req.params.userId }).sort({
-      createdAt: -1,
-    });
-    res.json(wasteData);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const { userId } = req.params;
+    const history = await Waste.find({ userId }).sort({ uploadedAt: -1 });
+    res.status(200).json(history);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
   }
 };

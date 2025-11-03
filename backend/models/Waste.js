@@ -2,14 +2,28 @@ import mongoose from "mongoose";
 
 const wasteSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    wasteType: {
-      type: String,
-      enum: ["Recyclable", "Non-Recyclable", "Organic"],
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
-    description: { type: String },
-    date: { type: Date, default: Date.now },
+    wasteType: {
+      type: String,
+      required: true,
+      enum: ["Organic", "Recyclable", "Non-Recyclable"],
+    },
+    description: {
+      type: String,
+      default: "",
+    },
+    imageUrl: {
+      type: String, // path to the uploaded image
+      required: true,
+    },
+    uploadedAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   { timestamps: true }
 );
