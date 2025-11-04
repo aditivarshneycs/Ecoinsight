@@ -1,27 +1,82 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { classifyWaste } from "../utils/classifier";
 import "./UploadPage.css";
 
 function UploadPage() {
   const [image, setImage] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleUpload = (e) => {
+  const handleUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setImage(URL.createObjectURL(file));
     setLoading(true);
     setResult(null);
+    setError("");
 
-    // Simulate AI model processing
-    setTimeout(() => {
-      const prediction = classifyWaste(file);
-      setResult(prediction);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      // ✅ Send image to backend (Node.js)
+      const response = await fetch("http://localhost:5000/api/classify", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to connect to backend.");
+      }
+
+      const data = await response.json();
+      console.log("Prediction result:", data);
+
+      const colorMap = {
+        Recyclable: "#007bff",
+        Organic: "#28a745",
+        "Non-Recyclable": "#dc3545",
+      };
+
+      const binMap = {
+        Recyclable: "Blue Bin",
+        Organic: "Green Bin",
+        "Non-Recyclable": "Red Bin",
+      };
+
+      const tipsMap = {
+        Recyclable: [
+          "Clean and dry recyclables before discarding.",
+          "Avoid mixing with organic waste.",
+          "Recycle paper, glass, and plastic separately.",
+        ],
+        Organic: [
+          "Compost kitchen waste and food scraps.",
+          "Avoid using plastic bags for organic waste.",
+          "Use green bin for garden and food waste.",
+        ],
+        "Non-Recyclable": [
+          "Dispose of this waste responsibly.",
+          "Avoid burning or mixing with recyclables.",
+          "Use red bin for sanitary or hazardous items.",
+        ],
+      };
+
+      setResult({
+        type: data.type,
+        color: colorMap[data.type] || "#555",
+        bin: binMap[data.type] || "Unknown Bin",
+        tips: tipsMap[data.type] || [],
+        confidence: data.confidence,
+      });
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Unable to connect to backend or ML service. Please try again.");
+    } finally {
       setLoading(false);
-    }, 2000); // 2 sec delay
+    }
   };
 
   return (
@@ -30,7 +85,7 @@ function UploadPage() {
       <p>
         Upload an image of waste to identify its type and learn how to dispose
         of it properly. Our AI helps you understand whether it’s organic,
-        recyclable, or hazardous.
+        recyclable, or non-recyclable.
       </p>
 
       <div className="upload-box">
@@ -48,6 +103,8 @@ function UploadPage() {
           <p>Please wait while the AI classifies your waste type.</p>
         </motion.div>
       )}
+
+      {error && <p className="error-message">{error}</p>}
 
       {!loading && result && (
         <motion.div
@@ -80,6 +137,10 @@ function UploadPage() {
                 <li key={index}>✅ {tip}</li>
               ))}
             </ul>
+            <p>
+              <strong>📊 Confidence:</strong>{" "}
+              {(result.confidence * 100).toFixed(2)}%
+            </p>
           </div>
 
           <div className="education-section">
@@ -95,8 +156,8 @@ function UploadPage() {
                 throw in <b>Green Bin</b>.
               </li>
               <li>
-                🔵 <b>Recyclable Waste:</b> Paper, plastic bottles, glass →
-                Clean and put in <b>Blue Bin</b>.
+                🔵 <b>Recyclable Waste:</b> Paper, plastic bottles, glass → Clean
+                and put in <b>Blue Bin</b>.
               </li>
               <li>
                 🔴 <b>Hazardous Waste:</b> Batteries, medical waste → Dispose
