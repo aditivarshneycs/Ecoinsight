@@ -19,60 +19,65 @@ function UploadPage() {
 
     try {
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("file", file); // ✅ matches backend multer field name
 
-      // ✅ Send image to backend (Node.js)
       const response = await fetch("http://localhost:5000/api/classify", {
         method: "POST",
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to connect to backend.");
-      }
+      if (!response.ok) throw new Error("Backend request failed");
 
       const data = await response.json();
-      console.log("Prediction result:", data);
+      console.log("✅ ML Prediction:", data);
+
+      const type = data.prediction; // ✅ backend returns { prediction: "hazardous" }
 
       const colorMap = {
-        Recyclable: "#007bff",
-        Organic: "#28a745",
-        "Non-Recyclable": "#dc3545",
+        recyclable: "#007bff",
+        organic: "#28a745",
+        "non_recyclable": "#dc3545",
+        hazardous: "#ff0000",
       };
 
       const binMap = {
-        Recyclable: "Blue Bin",
-        Organic: "Green Bin",
-        "Non-Recyclable": "Red Bin",
+        recyclable: "Blue Bin",
+        organic: "Green Bin",
+        "non_recyclable": "Red Bin",
+        hazardous: "Hazardous Waste Bin / Dispose Safely",
       };
 
       const tipsMap = {
-        Recyclable: [
+        recyclable: [
           "Clean and dry recyclables before discarding.",
-          "Avoid mixing with organic waste.",
-          "Recycle paper, glass, and plastic separately.",
+          "Do not mix with food or organic waste.",
+          "Sort paper, plastic, and metal separately.",
         ],
-        Organic: [
-          "Compost kitchen waste and food scraps.",
-          "Avoid using plastic bags for organic waste.",
-          "Use green bin for garden and food waste.",
+        organic: [
+          "Can be composted at home or sent to municipal compost bins.",
+          "Keep separate from plastics.",
+          "Use biodegradable bags if needed.",
         ],
-        "Non-Recyclable": [
-          "Dispose of this waste responsibly.",
-          "Avoid burning or mixing with recyclables.",
-          "Use red bin for sanitary or hazardous items.",
+        "non_recyclable": [
+          "Do not mix with recyclable items.",
+          "Store in closed bags to avoid contamination.",
+          "Dispose in red bin only.",
+        ],
+        hazardous: [
+          "Do not throw in normal dustbin.",
+          "Requires special handling and disposal.",
+          "Return batteries or electronics to collection centers.",
         ],
       };
 
       setResult({
-        type: data.type,
-        color: colorMap[data.type] || "#555",
-        bin: binMap[data.type] || "Unknown Bin",
-        tips: tipsMap[data.type] || [],
-        confidence: data.confidence,
+        type,
+        color: colorMap[type] || "#555",
+        bin: binMap[type] || "Unknown bin",
+        tips: tipsMap[type] || [],
       });
     } catch (err) {
-      console.error("Error:", err);
+      console.error("❌ Error:", err);
       setError("Unable to connect to backend or ML service. Please try again.");
     } finally {
       setLoading(false);
@@ -82,11 +87,7 @@ function UploadPage() {
   return (
     <div className="upload-page">
       <h1>♻️ EcoInsight: Waste Classifier</h1>
-      <p>
-        Upload an image of waste to identify its type and learn how to dispose
-        of it properly. Our AI helps you understand whether it’s organic,
-        recyclable, or non-recyclable.
-      </p>
+      <p>Upload a waste image to identify if it's recyclable, organic, hazardous, or non-recyclable.</p>
 
       <div className="upload-box">
         <input type="file" accept="image/*" onChange={handleUpload} />
@@ -94,11 +95,7 @@ function UploadPage() {
       </div>
 
       {loading && (
-        <motion.div
-          className="loading-section"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
+        <motion.div className="loading-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div className="loading-animation">🔄 Analyzing waste...</div>
           <p>Please wait while the AI classifies your waste type.</p>
         </motion.div>
@@ -115,54 +112,17 @@ function UploadPage() {
         >
           <h2>
             Classification Result:{" "}
-            <span style={{ color: result.color }}>{result.type}</span>
+            <span style={{ color: result.color }}>{result.type.toUpperCase()}</span>
           </h2>
 
-          <div
-            className="bin-info"
-            style={{ backgroundColor: result.color, color: "#fff" }}
-          >
-            <p>
-              <strong>🗑 Waste Type:</strong> {result.type}
-            </p>
-            <p>
-              <strong>🚮 Dispose:</strong> Throw it in the{" "}
-              <b>{result.bin}</b>.
-            </p>
-            <p>
-              <strong>💡 Tips to Handle:</strong>
-            </p>
+          <div className="bin-info" style={{ backgroundColor: result.color, color: "#fff" }}>
+            <p><strong>🗑 Waste Type:</strong> {result.type}</p>
+            <p><strong>🚮 Dispose In:</strong> <b>{result.bin}</b></p>
+            <p><strong>💡 Handling Tips:</strong></p>
             <ul>
-              {result.tips.map((tip, index) => (
-                <li key={index}>✅ {tip}</li>
+              {result.tips.map((tip, i) => (
+                <li key={i}>✅ {tip}</li>
               ))}
-            </ul>
-            <p>
-              <strong>📊 Confidence:</strong>{" "}
-              {(result.confidence * 100).toFixed(2)}%
-            </p>
-          </div>
-
-          <div className="education-section">
-            <h3>🌍 Why Waste Segregation Matters</h3>
-            <p>
-              Segregating waste helps reduce pollution, saves natural
-              resources, and makes recycling more effective. Here’s how you can
-              do it easily:
-            </p>
-            <ul>
-              <li>
-                🟢 <b>Organic Waste:</b> Food scraps, peels, leaves → Compost or
-                throw in <b>Green Bin</b>.
-              </li>
-              <li>
-                🔵 <b>Recyclable Waste:</b> Paper, plastic bottles, glass → Clean
-                and put in <b>Blue Bin</b>.
-              </li>
-              <li>
-                🔴 <b>Hazardous Waste:</b> Batteries, medical waste → Dispose
-                safely in <b>Red Bin</b>.
-              </li>
             </ul>
           </div>
 

@@ -8,6 +8,8 @@ import FormData from "form-data";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import wasteRoutes from "./routes/wasteRoutes.js";
+import mlRoutes from "./routes/mlRoutes.js";
+
 
 dotenv.config();
 const app = express();
@@ -15,7 +17,7 @@ const app = express();
 // ===== Middleware =====
 app.use(express.json());
 app.use(cors());
-
+app.use("/api/classify", mlRoutes);
 // ===== Connect to MongoDB =====
 connectDB();
 
