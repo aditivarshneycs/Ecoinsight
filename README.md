@@ -1,70 +1,187 @@
-# Getting Started with Create React App
+♻️ EcoInsight – AI Powered Waste Classifier & Eco-Points System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+EcoInsight is a full-stack web application that helps users classify waste using AI and promotes sustainability through an Eco-Points reward system.  
+Users can upload images of waste, and the ML model predicts whether the item is **Recyclable, Organic, Hazardous, or Non-Recyclable**.  
+Each classification earns the user **10 Eco Points**, which can later be redeemed for rewards.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🚀 Features
 
-### `npm start`
+✅ AI-powered waste classification (Python + TensorFlow)  
+✅ User authentication (Register/Login)  
+✅ Upload waste image & receive classification result  
+✅ ML-based confidence score  
+✅ Eco Points added automatically after each upload  
+✅ Dashboard with activity history & points tracking  
+✅ MongoDB database to store users + waste logs  
+✅ Fully responsive UI built in React  
+✅ Image preview & real-time UI update  
+✅ Error handling if backend/ML server is offline  
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🧠 Tech Stack
 
-### `npm test`
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React + Framer Motion + Fetch API |
+| **Backend** | Node.js, Express.js, Multer, Axios |
+| **Authentication** | JWT + Bcrypt |
+| **Database** | MongoDB + Mongoose |
+| **ML Service** | Python, Flask, TensorFlow/Keras, NumPy, Pillow |
+| **Model Type** | CNN trained on 4-class waste dataset |
+| **Storage** | Local `/uploads` folder (can be switched to Cloudinary/S3) |
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 📂 Folder Structure
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+eco-insight/
+│
+├── frontend/ # React UI
+│ ├── src/pages/ # Upload, Dashboard, Auth Screens
+│ ├── src/components/
+│ └── package.json
+│
+├── backend/ # Node.js + Express API
+│ ├── routes/ # authRoutes.js, mlRoutes.js, wasteRoutes.js
+│ ├── controllers/
+│ ├── models/ # User.js, Waste.js
+│ ├── uploads/ # Saved image files
+│ └── server.js
+│
+└── ml-model/ # Python ML Service
+├── dataset/ # 4 labeled folders: recyclable/organic/etc.
+├── train_model.py # Script to train CNN
+├── model.pkl # Saved trained model
+├── app.py # Flask Prediction API
+└── requirements.txt
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+yaml
+Copy code
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## ⚙️ Installation & Setup
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### ✅ 1. Clone Repository
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+git clone https://github.com/YOUR_USERNAME/eco-insight.git
+cd eco-insight
+✅ 2. Setup Backend (Node.js)
+bash
+Copy code
+cd backend
+npm install
+Create .env file:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+ini
+Copy code
+MONGO_URI=mongodb+srv://...
+JWT_SECRET=your_secret
+PORT=5000
+Run backend:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+bash
+Copy code
+npm run dev
+Should print:
 
-## Learn More
+arduino
+Copy code
+✅ EcoInsight Backend running on http://localhost:5000
+✅ 3. Setup ML Model (Python)
+bash
+Copy code
+cd ml-model
+pip install -r requirements.txt
+python app.py
+Should print:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+csharp
+Copy code
+ * Running on http://127.0.0.1:5001
+✅ 4. Setup Frontend (React)
+bash
+Copy code
+cd frontend
+npm install
+npm start
+App runs on:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+arduino
+Copy code
+http://localhost:3000
+🔁 Full System Flow
+kotlin
+Copy code
+React Upload → Backend API → Flask ML Model → Prediction →
+Backend stores data + adds EcoPoints → React Dashboard updates
+🧪 API Endpoints
+Method	Endpoint	Description
+POST	/api/auth/register	Register user
+POST	/api/auth/login	Login user
+POST	/api/classify	Upload image & get ML result
+GET	/api/waste/history/:userId	Fetch classified waste history
+GET	/api/user/points/:userId	Fetch eco points
 
-### Code Splitting
+🏆 Eco-Points Logic
+Action	Points
+Upload & classify waste image	+10 points
+Dashboard auto-updates	✅
+Stored in MongoDB	✅
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+🖼️ Screenshots (Add later)
+cpp
+Copy code
+✅ Login / Signup
+✅ Upload Page
+✅ ML Result Page
+✅ Dashboard (Points + History)
+✅ Redeem Page (optional)
+🛠️ Future Improvements
+🔹 Add leaderboard (Top eco users)
+🔹 Add cloud storage for uploaded images (Cloudinary, S3)
+🔹 Add QR-based recycle bins for real-world use
+🔹 Allow redeeming points for vouchers/gifts
+🔹 Deploy backend (Render), ML (HuggingFace Spaces), frontend (Vercel)
 
-### Analyzing the Bundle Size
+🤝 Contributing
+Fork repo
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Create new branch: git checkout -b feature-name
 
-### Making a Progressive Web App
+Commit changes: git commit -m "Added feature X"
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Push branch: git push origin feature-name
 
-### Advanced Configuration
+Create Pull Request ✅
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+📜 License
+MIT License © 2025 – EcoInsight Team
 
-### Deployment
+🌍 Made with ♻️ for a cleaner planet
+“Small actions make a big difference.”
+Built by Aditi Varshney & Team 🌱
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+yaml
+Copy code
 
-### `npm run build` fails to minify
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## ✅ NEXT STEP
+
+Want me to also generate:
+
+✔ GitHub repo description + tags  
+✔ Project demo GIF preview banner  
+✔ `CONTRIBUTING.md` file  
+✔ Deploy instructions (Render + Vercel + HuggingFace)
+
+Just reply:
+
+> **"add deploy section"**  
+or  
+> **"add contributing file"**
