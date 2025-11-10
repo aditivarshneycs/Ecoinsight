@@ -123,8 +123,6 @@ Create `.env` file in the `backend` directory:
 
 ```ini
 MONGO_URI=mongodb://127.0.0.1:27017/ecoinsight
-# OR for MongoDB Atlas:
-# MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/ecoinsight?retryWrites=true&w=majority
 
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
 PORT=5001
