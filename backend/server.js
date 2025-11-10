@@ -9,17 +9,36 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import wasteRoutes from "./routes/wasteRoutes.js";
 import mlRoutes from "./routes/mlRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 
 dotenv.config();
 const app = express();
 
+// ===== CORS Configuration =====
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+
 // ===== Middleware =====
 app.use(express.json());
-app.use(cors());
-app.use("/api/classify", mlRoutes);
+app.use(express.urlencoded({ extended: true }));
+
 // ===== Connect to MongoDB =====
 connectDB();
+
+// ===== Routes (moved after CORS) =====
+app.use("/api/classify", mlRoutes);
 
 // ===== Upload Handling (for classification images) =====
 const upload = multer({ dest: "uploads/" });
@@ -27,35 +46,9 @@ const upload = multer({ dest: "uploads/" });
 // ===== API Routes =====
 app.use("/api/auth", authRoutes);
 app.use("/api/waste", wasteRoutes);
+app.use("/api/user", userRoutes);
 
-// ✅ NEW: Waste Classification Route
-app.post("/api/classify", upload.single("image"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No image uploaded" });
-    }
-
-    // Create a form to send image to ML service (Flask)
-    const formData = new FormData();
-    formData.append("image", fs.createReadStream(req.file.path));
-
-    // Call the ML Flask API (make sure it's running on port 5001)
-    const response = await axios.post("http://127.0.0.1:5001/predict", formData, {
-      headers: formData.getHeaders(),
-    });
-
-    // Send ML result to frontend
-    res.json(response.data);
-  } catch (error) {
-    console.error("❌ Error connecting to ML service:", error.message);
-    res.status(500).json({
-      error: "Error connecting to ML service",
-      details: error.message,
-    });
-  }
-});
-
-// Serve uploaded files statically
+// Serve uploaded files statically (for temporary files before Cloudinary upload)
 app.use("/uploads", express.static("uploads"));
 
 // ===== Default Route =====
@@ -64,7 +57,7 @@ app.get("/", (req, res) => {
 });
 
 // ===== Start Server =====
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () =>
   console.log(`✅ EcoInsight Backend running on http://localhost:${PORT}`)
 );

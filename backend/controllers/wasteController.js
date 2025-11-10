@@ -2,7 +2,8 @@ import Waste from "../models/Waste.js";
 
 export const uploadWaste = async (req, res) => {
   try {
-    const { userId, wasteType, description } = req.body;
+    const userId = req.user; // From auth middleware
+    const { wasteType, description } = req.body;
     const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
     if (!imageUrl) {
@@ -26,7 +27,7 @@ export const uploadWaste = async (req, res) => {
 
 export const getUserHistory = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user; // From auth middleware
     const history = await Waste.find({ userId }).sort({ uploadedAt: -1 });
     res.status(200).json(history);
   } catch (err) {

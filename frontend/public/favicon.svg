@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="leafGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2E8B57;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#65b87a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#leafGradient)"/>
+  
+  <!-- Main Leaf -->
+  <path d="M50 15 Q30 20 25 40 Q20 60 30 70 Q40 75 50 80 Q60 75 70 70 Q80 60 75 40 Q70 20 50 15 Z" 
+        fill="#ffffff" opacity="0.95"/>
+  
+  <!-- Leaf Vein -->
+  <path d="M50 15 Q48 30 47 45 Q46 60 47 70 Q48 75 50 80" 
+        stroke="#2E8B57" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Recycling Arrow -->
+  <g transform="translate(50, 50) rotate(45)">
+    <path d="M-12,-6 L-4,-6 L-4,-14 L4,-14 L4,-6 L12,-6 L12,6 L4,6 L4,14 L-4,14 L-4,6 L-12,6 Z" 
+          fill="#1e7e34" opacity="0.85"/>
+  </g>
+  
+  <!-- Center Dot -->
+  <circle cx="50" cy="50" r="4" fill="#ffffff"/>
+</svg>

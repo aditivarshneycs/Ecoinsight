@@ -12,14 +12,15 @@ import Profile from "./pages/Profile";
 import LoginSignup from "./pages/LoginSignup";
 import Instructions from "./pages/Instructions";
 import RedeemPoints from "./pages/RedeemPoints";
+import Achievements from "./pages/Achievements";
 
 function requireAuth() {
-  const cur = localStorage.getItem("eco_current");
-  return cur ? JSON.parse(cur) : null;
+  const user = localStorage.getItem("eco_user");
+  return user ? JSON.parse(user) : null;
 }
 function PrivateRoute({ children }) {
   const user = requireAuth();
-  return user ? children : <Navigate to="/login" replace />;
+  return user && user.token ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
+          {/* Redirect logged-in users from home to dashboard */}
           <Route path="/upload" element={<PrivateRoute><Upload /></PrivateRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
@@ -38,6 +40,7 @@ export default function App() {
           <Route path="/instructions" element={<Instructions />} />
           <Route path="/redeem" element={<PrivateRoute><RedeemPoints /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/achievements" element={<PrivateRoute><Achievements /></PrivateRoute>} />
           <Route path="/login" element={<LoginSignup />} />
           <Route path="/signup" element={<LoginSignup />} />
           <Route path="*" element={<Navigate to="/" replace />} />

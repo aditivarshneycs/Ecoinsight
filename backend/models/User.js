@@ -18,6 +18,32 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
+    ecoPoints: {
+      type: Number,
+      default: 0,
+    },
+    redemptions: [{
+      rewardId: String,
+      rewardTitle: String,
+      rewardIcon: String,
+      points: Number,
+      redeemedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    }],
+    achievements: [{
+      achievementId: String,
+      achievementTitle: String,
+      unlockedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    }],
+    totalPointsEarned: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

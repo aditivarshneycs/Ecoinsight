@@ -10,7 +10,7 @@ const wasteSchema = new mongoose.Schema(
     wasteType: {
       type: String,
       required: true,
-      enum: ["Organic", "Recyclable", "Non-Recyclable"],
+      enum: ["organic", "recyclable", "non_recyclable", "hazardous", "Organic", "Recyclable", "Non-Recyclable", "Hazardous"],
     },
     description: {
       type: String,

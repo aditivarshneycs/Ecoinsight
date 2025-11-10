@@ -1,140 +1,260 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-//import loginIllustration from "../assets/eco-illustration.svg"; // replace with your own green-themed image
+import { authAPI } from "../utils/api";
+import { ToastContainer } from "../components/Toast";
+import "./LoginSignup.css";
 
 export default function LoginSignup() {
-  const [isSignup, setIsSignup] = useState(true);
-  const [form, setForm] = useState({ firstName: "", username: "", email: "", password: "", confirm: "" });
+  const location = useLocation();
+  const [isSignup, setIsSignup] = useState(location.pathname === "/signup");
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [toasts, setToasts] = useState([]);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const addToast = useCallback((message, type = "info", duration = 4000) => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev, { id, message, type, duration }]);
+    return id;
+  }, []);
+
+  const removeToast = useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  useEffect(() => {
+    setIsSignup(location.pathname === "/signup");
+    setError("");
+    setForm({ name: "", email: "", password: "", confirm: "" });
+  }, [location.pathname]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSignup) {
-      const users = JSON.parse(localStorage.getItem("eco_users") || "[]");
-      if (users.some(u => u.username === form.username)) {
-        alert("Username already exists!");
-        return;
+    setError("");
+    setLoading(true);
+
+    try {
+      if (isSignup) {
+        if (form.password.length < 6) {
+          setError("Password must be at least 6 characters long");
+          addToast("Password must be at least 6 characters long", "error");
+          setLoading(false);
+          return;
+        }
+        if (form.password !== form.confirm) {
+          setError("Passwords do not match");
+          addToast("Passwords do not match", "error");
+          setLoading(false);
+          return;
+        }
+        const data = await authAPI.register(form.name, form.email, form.password);
+        localStorage.setItem("eco_user", JSON.stringify({
+          token: data.token,
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          ecoPoints: data.user.ecoPoints || 0,
+        }));
+        addToast(`Welcome ${form.name}! Account created successfully.`, "success");
+        setTimeout(() => navigate("/dashboard"), 1000);
+      } else {
+        const data = await authAPI.login(form.email, form.password);
+        localStorage.setItem("eco_user", JSON.stringify({
+          token: data.token,
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          ecoPoints: data.user.ecoPoints || 0,
+        }));
+        addToast(`Welcome back, ${data.user.name}!`, "success");
+        setTimeout(() => navigate("/dashboard"), 1000);
       }
-      users.push(form);
-      localStorage.setItem("eco_users", JSON.stringify(users));
-      localStorage.setItem("eco_current", JSON.stringify(form));
-    } else {
-      const users = JSON.parse(localStorage.getItem("eco_users") || "[]");
-      const found = users.find(u => u.username === form.username && u.password === form.password);
-      if (!found) {
-        alert("Invalid credentials");
-        return;
-      }
-      localStorage.setItem("eco_current", JSON.stringify(found));
+    } catch (err) {
+      console.error("Auth error:", err);
+      const errorMsg = err.message || "An error occurred. Please try again.";
+      setError(errorMsg);
+      addToast(errorMsg, "error");
+    } finally {
+      setLoading(false);
     }
-    navigate("/dashboard");
+  };
+
+  const handleSwitch = (toSignup) => {
+    setIsSignup(toSignup);
+    setError("");
+    setForm({ name: "", email: "", password: "", confirm: "" });
+    navigate(toSignup ? "/signup" : "/login");
   };
 
   return (
-    <div className="auth-container" style={{ display: "flex", height: "100vh" }}>
-      {/* Left illustration */}
+    <div className="auth-container">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      
+      {/* Left Side - Illustration */}
       <motion.div
         initial={{ opacity: 0, x: -40 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.6 }}
         className="auth-left"
-        style={{
-          flex: 1,
-          background: "linear-gradient(135deg, #c2f0c2, #7dd47d)",
-          color: "#1b4d1b",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          textAlign: "center",
-          padding: "40px"
-        }}
       >
-        <img 
-        src="https://cdn-icons-png.flaticon.com/512/7652/7652519.png" 
-        alt="Eco Illustration" 
-        style={{ width: "250px", height: "auto" }} 
-        />
-        
-        <h2 style={{ fontSize: "1.8rem" }}>
-          {isSignup ? "Begin Your Green Journey" : "Welcome Back to EcoInsight"}
-        </h2>
-        <p>Join the community making our planet cleaner, one upload at a time 🌱</p>
+        <div className="auth-left-content">
+          <img
+            src="/assets/hero-illustration.png"
+            alt="EcoInsight"
+            onError={(e) => {
+              e.target.style.display = "none";
+              const parent = e.target.parentElement;
+              if (parent && !parent.querySelector(".fallback-icon")) {
+                const icon = document.createElement("div");
+                icon.className = "fallback-icon";
+                icon.style.cssText = "font-size: 120px; margin-bottom: 32px;";
+                icon.textContent = "🌿";
+                parent.insertBefore(icon, e.target);
+              }
+            }}
+          />
+          <h2>
+            {isSignup ? "Begin Your Green Journey" : "Welcome Back to EcoInsight"}
+          </h2>
+          <p>
+            {isSignup
+              ? "Join the community making our planet cleaner, one upload at a time 🌱"
+              : "Continue your eco-friendly journey and track your environmental impact 🌍"}
+          </p>
+        </div>
       </motion.div>
 
-      {/* Right form */}
+      {/* Right Side - Form */}
       <motion.div
         initial={{ opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.6 }}
         className="auth-right"
-        style={{
-          flex: 1,
-          background: "#fff",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center"
-        }}
       >
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            width: "80%",
-            maxWidth: "380px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "14px"
-          }}
-        >
-          <h2 style={{ textAlign: "center", color: "#2f6b2f" }}>
-            {isSignup ? "Create Account" : "Log In"}
-          </h2>
-
-          {isSignup && (
-            <>
-              <input type="text" placeholder="Full Name" value={form.firstName}
-                onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
-              <input type="text" placeholder="Username" value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value })} required />
-              <input type="email" placeholder="Email" value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-            </>
-          )}
-
-          {!isSignup && (
-            <input type="text" placeholder="Username" value={form.username}
-              onChange={(e) => setForm({ ...form, username: e.target.value })} required />
-          )}
-
-          <input type="password" placeholder="Password" value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })} required />
-
-          {isSignup && (
-            <input type="password" placeholder="Confirm Password" value={form.confirm}
-              onChange={(e) => setForm({ ...form, confirm: e.target.value })} required />
-          )}
-
-          <button type="submit" style={{
-            background: "#2f6b2f",
-            color: "white",
-            padding: "10px 0",
-            borderRadius: "10px",
-            border: "none",
-            cursor: "pointer",
-            fontWeight: "600"
-          }}>
-            {isSignup ? "Create Account" : "Login"}
-          </button>
-
-          <p style={{ textAlign: "center" }}>
+        <div className="auth-form-wrapper">
+          <h2>{isSignup ? "Create Account" : "Log In"}</h2>
+          <p className="subtitle">
             {isSignup
-              ? <>Already have an account?{" "}
-                  <span onClick={() => setIsSignup(false)} style={{ color: "#2f6b2f", cursor: "pointer", fontWeight: "600" }}>Login</span></>
-              : <>Don't have an account?{" "}
-                  <span onClick={() => setIsSignup(true)} style={{ color: "#2f6b2f", cursor: "pointer", fontWeight: "600" }}>Sign up</span></>}
+              ? "Sign up to start classifying waste and earning eco points"
+              : "Enter your credentials to access your account"}
           </p>
-        </form>
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="auth-error"
+              >
+                {error}
+              </motion.div>
+            )}
+
+            {isSignup && (
+              <div className="auth-form-group">
+                <label htmlFor="name">Full Name</label>
+                <input
+                  id="name"
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  required
+                  disabled={loading}
+                  autoComplete="name"
+                />
+              </div>
+            )}
+
+            <div className="auth-form-group">
+              <label htmlFor="email">Email Address</label>
+              <input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+                disabled={loading}
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="auth-form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                placeholder={isSignup ? "Create a password (min. 6 characters)" : "Enter your password"}
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                required
+                disabled={loading}
+                autoComplete={isSignup ? "new-password" : "current-password"}
+                minLength={6}
+              />
+            </div>
+
+            {isSignup && (
+              <div className="auth-form-group">
+                <label htmlFor="confirm">Confirm Password</label>
+                <input
+                  id="confirm"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={form.confirm}
+                  onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+                  required
+                  disabled={loading}
+                  autoComplete="new-password"
+                />
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="auth-submit-btn"
+            >
+              {loading && <span className="spinner"></span>}
+              {loading
+                ? (isSignup ? "Creating Account..." : "Logging In...")
+                : (isSignup ? "Create Account" : "Log In")}
+            </button>
+
+            <p className="auth-switch">
+              {isSignup ? (
+                <>
+                  Already have an account?{" "}
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSwitch(false);
+                    }}
+                  >
+                    Log In
+                  </a>
+                </>
+              ) : (
+                <>
+                  Don't have an account?{" "}
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSwitch(true);
+                    }}
+                  >
+                    Sign Up
+                  </a>
+                </>
+              )}
+            </p>
+          </form>
+        </div>
       </motion.div>
     </div>
   );
